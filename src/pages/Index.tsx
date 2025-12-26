@@ -1,77 +1,95 @@
 import React, { useState } from 'react';
-import { CartProvider } from '@/context/CartContext';
-import BottomNav from '@/components/BottomNav';
-import HomePage from '@/pages/HomePage';
-import RestaurantPage from '@/pages/RestaurantPage';
-import CartPage from '@/pages/CartPage';
-import SearchPage from '@/pages/SearchPage';
-import ProfilePage from '@/pages/ProfilePage';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import DriverBottomNav from '@/components/DriverBottomNav';
+import AuthPage from '@/pages/AuthPage';
+import DashboardPage from '@/pages/DashboardPage';
+import OrdersPage from '@/pages/OrdersPage';
+import ActiveDeliveryPage from '@/pages/ActiveDeliveryPage';
+import HistoryPage from '@/pages/HistoryPage';
+import DriverProfilePage from '@/pages/DriverProfilePage';
+import { DeliveryOrder } from '@/hooks/useDeliveryOrders';
 
-type View = 'home' | 'restaurant' | 'cart' | 'search' | 'profile';
+type View = 'dashboard' | 'orders' | 'active-delivery' | 'history' | 'profile';
 
-const Index: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('home');
-  const [currentView, setCurrentView] = useState<View>('home');
-  const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(null);
+const DriverApp: React.FC = () => {
+  const { user, loading } = useAuth();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [selectedOrder, setSelectedOrder] = useState<DeliveryOrder | null>(null);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Ładowanie...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage />;
+  }
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'home') setCurrentView('home');
-    else if (tab === 'search') setCurrentView('search');
-    else if (tab === 'cart') setCurrentView('cart');
+    if (tab === 'dashboard') setCurrentView('dashboard');
+    else if (tab === 'orders') setCurrentView('orders');
+    else if (tab === 'history') setCurrentView('history');
     else if (tab === 'profile') setCurrentView('profile');
   };
 
-  const handleRestaurantClick = (restaurantId: string) => {
-    setSelectedRestaurantId(restaurantId);
-    setCurrentView('restaurant');
-  };
-
-  const handleBackFromRestaurant = () => {
-    setCurrentView('home');
-    setActiveTab('home');
-  };
-
-  const handleGoToCart = () => {
-    setCurrentView('cart');
-    setActiveTab('cart');
-  };
-
-  const handleCheckout = () => {
-    setCurrentView('home');
-    setActiveTab('home');
+  const handleSelectOrder = (order: DeliveryOrder) => {
+    setSelectedOrder(order);
+    setCurrentView('active-delivery');
   };
 
   const renderContent = () => {
     switch (currentView) {
-      case 'home':
-        return <HomePage onRestaurantClick={handleRestaurantClick} />;
-      case 'restaurant':
-        return selectedRestaurantId ? (
-          <RestaurantPage
-            restaurantId={selectedRestaurantId}
-            onBack={handleBackFromRestaurant}
-            onGoToCart={handleGoToCart}
+      case 'dashboard':
+        return (
+          <DashboardPage
+            onViewOrders={() => { setCurrentView('orders'); setActiveTab('orders'); }}
+            onViewHistory={() => { setCurrentView('history'); setActiveTab('history'); }}
+          />
+        );
+      case 'orders':
+        return (
+          <OrdersPage
+            onBack={() => { setCurrentView('dashboard'); setActiveTab('dashboard'); }}
+            onSelectOrder={handleSelectOrder}
+          />
+        );
+      case 'active-delivery':
+        return selectedOrder ? (
+          <ActiveDeliveryPage
+            order={selectedOrder}
+            onBack={() => { setCurrentView('orders'); setActiveTab('orders'); }}
+            onComplete={() => { setCurrentView('dashboard'); setActiveTab('dashboard'); setSelectedOrder(null); }}
           />
         ) : null;
-      case 'cart':
-        return <CartPage onCheckout={handleCheckout} />;
-      case 'search':
-        return <SearchPage onRestaurantClick={handleRestaurantClick} />;
+      case 'history':
+        return <HistoryPage onBack={() => { setCurrentView('dashboard'); setActiveTab('dashboard'); }} />;
       case 'profile':
-        return <ProfilePage />;
+        return <DriverProfilePage onBack={() => { setCurrentView('dashboard'); setActiveTab('dashboard'); }} />;
       default:
-        return <HomePage onRestaurantClick={handleRestaurantClick} />;
+        return <DashboardPage onViewOrders={() => setCurrentView('orders')} onViewHistory={() => setCurrentView('history')} />;
     }
   };
 
   return (
-    <CartProvider>
-      <div className="max-w-lg mx-auto bg-background min-h-screen relative">
-        {renderContent()}
-        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-      </div>
-    </CartProvider>
+    <div className="max-w-lg mx-auto bg-background min-h-screen relative">
+      {renderContent()}
+      {currentView !== 'active-delivery' && (
+        <DriverBottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+      )}
+    </div>
+  );
+};
+
+const Index: React.FC = () => {
+  return (
+    <AuthProvider>
+      <DriverApp />
+    </AuthProvider>
   );
 };
 

@@ -14,7 +14,188 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      delivery_orders: {
+        Row: {
+          created_at: string | null
+          customer_address: string
+          customer_lat: number
+          customer_lng: number
+          customer_name: string
+          customer_phone: string
+          delivered_at: string | null
+          delivery_fee: number
+          driver_id: string | null
+          estimated_time_minutes: number | null
+          id: string
+          order_details: string | null
+          picked_up_at: string | null
+          restaurant_id: string
+          status: Database["public"]["Enums"]["delivery_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_address: string
+          customer_lat: number
+          customer_lng: number
+          customer_name: string
+          customer_phone: string
+          delivered_at?: string | null
+          delivery_fee?: number
+          driver_id?: string | null
+          estimated_time_minutes?: number | null
+          id?: string
+          order_details?: string | null
+          picked_up_at?: string | null
+          restaurant_id: string
+          status?: Database["public"]["Enums"]["delivery_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_address?: string
+          customer_lat?: number
+          customer_lng?: number
+          customer_name?: string
+          customer_phone?: string
+          delivered_at?: string | null
+          delivery_fee?: number
+          driver_id?: string | null
+          estimated_time_minutes?: number | null
+          id?: string
+          order_details?: string | null
+          picked_up_at?: string | null
+          restaurant_id?: string
+          status?: Database["public"]["Enums"]["delivery_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "delivery_orders_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payouts: {
+        Row: {
+          amount: number
+          created_at: string | null
+          driver_id: string
+          id: string
+          status: string | null
+          stripe_transfer_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          driver_id: string
+          id?: string
+          status?: string | null
+          stripe_transfer_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          driver_id?: string
+          id?: string
+          status?: string | null
+          stripe_transfer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          current_lat: number | null
+          current_lng: number | null
+          full_name: string
+          id: string
+          is_available: boolean | null
+          phone: string | null
+          stripe_account_id: string | null
+          total_earnings: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
+          full_name: string
+          id?: string
+          is_available?: boolean | null
+          phone?: string | null
+          stripe_account_id?: string | null
+          total_earnings?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
+          full_name?: string
+          id?: string
+          is_available?: boolean | null
+          phone?: string | null
+          stripe_account_id?: string | null
+          total_earnings?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      restaurants: {
+        Row: {
+          address: string
+          created_at: string | null
+          id: string
+          lat: number
+          lng: number
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          address: string
+          created_at?: string | null
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          address?: string
+          created_at?: string | null
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +204,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      delivery_status:
+        | "pending"
+        | "accepted"
+        | "picked_up"
+        | "in_transit"
+        | "delivered"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +337,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      delivery_status: [
+        "pending",
+        "accepted",
+        "picked_up",
+        "in_transit",
+        "delivered",
+        "cancelled",
+      ],
+    },
   },
 } as const
