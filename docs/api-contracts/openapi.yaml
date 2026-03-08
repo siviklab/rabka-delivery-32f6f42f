@@ -1,0 +1,325 @@
+openapi: 3.1.0
+info:
+  title: Rabka Delivery - Restaurant Integration API
+  version: 1.0.0
+  description: |
+    API contract for integrating external restaurant systems with the Rabka Delivery platform.
+    Restaurants use this API to create delivery orders and receive status updates via webhooks.
+  contact:
+    name: Rabka Delivery Integration Support
+    email: integration@rabka-delivery.com
+
+servers:
+  - url: https://rgjrhxnjdfhdefmunawi.supabase.co/functions/v1
+    description: Production
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-restaurant-api-key
+      description: Unique API key issued per restaurant. Obtain from admin panel.
+
+  schemas:
+    OrderItem:
+      type: object
+      required: [item_name, quantity, unit_price]
+      properties:
+        item_name:
+          type: string
+          maxLength: 200
+          example: "Margherita Pizza"
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 2
+        unit_price:
+          type: number
+          format: decimal
+          minimum: 0.01
+          example: 24.99
+        notes:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: "No onions, extra cheese"
+
+    CreateOrderRequest:
+      type: object
+      required:
+        - external_order_id
+        - customer_name
+        - customer_phone
+        - customer_address
+        - customer_lat
+        - customer_lng
+        - items
+      properties:
+        external_order_id:
+          type: string
+          maxLength: 100
+          description: Your internal order reference ID
+          example: "REST-2026-00142"
+        customer_name:
+          type: string
+          maxLength: 100
+          example: "Jan Kowalski"
+        customer_phone:
+          type: string
+          pattern: '^\+?[0-9\s\-]{7,20}$'
+          example: "+48 123 456 789"
+        customer_address:
+          type: string
+          maxLength: 300
+          example: "ul. Główna 15, 34-700 Rabka-Zdrój"
+        customer_lat:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 49.6092
+        customer_lng:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: 19.9567
+        order_details:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Free-text notes for the driver
+          example: "Ring doorbell twice. 2nd floor."
+        delivery_fee:
+          type: number
+          format: decimal
+          minimum: 0
+          default: 5.00
+          example: 7.50
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    CreateOrderResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        order:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Rabka Delivery internal order ID
+              example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            external_order_id:
+              type: string
+              example: "REST-2026-00142"
+            status:
+              $ref: '#/components/schemas/DeliveryStatus'
+            created_at:
+              type: string
+              format: date-time
+
+    OrderStatusRequest:
+      type: object
+      required: [order_id]
+      properties:
+        order_id:
+          type: string
+          format: uuid
+          description: Rabka Delivery order ID (returned from create-order)
+        external_order_id:
+          type: string
+          description: Alternatively, your own order reference
+
+    OrderStatusResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        order:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            external_order_id:
+              type: string
+            status:
+              $ref: '#/components/schemas/DeliveryStatus'
+            driver_name:
+              type: string
+              nullable: true
+            driver_phone:
+              type: string
+              nullable: true
+            estimated_time_minutes:
+              type: integer
+              nullable: true
+            picked_up_at:
+              type: string
+              format: date-time
+              nullable: true
+            delivered_at:
+              type: string
+              format: date-time
+              nullable: true
+
+    DeliveryStatus:
+      type: string
+      enum: [pending, accepted, picked_up, in_transit, delivered, cancelled]
+      description: |
+        - `pending` – Order created, waiting for driver
+        - `accepted` – Driver assigned
+        - `picked_up` – Driver picked up from restaurant
+        - `in_transit` – On the way to customer
+        - `delivered` – Successfully delivered
+        - `cancelled` – Order cancelled
+
+    WebhookPayload:
+      type: object
+      description: Payload sent to your webhook_url on status changes
+      properties:
+        event:
+          type: string
+          enum: [order.status_changed]
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+          properties:
+            order_id:
+              type: string
+              format: uuid
+            external_order_id:
+              type: string
+            previous_status:
+              $ref: '#/components/schemas/DeliveryStatus'
+            new_status:
+              $ref: '#/components/schemas/DeliveryStatus'
+            driver_name:
+              type: string
+              nullable: true
+            driver_phone:
+              type: string
+              nullable: true
+            picked_up_at:
+              type: string
+              format: date-time
+              nullable: true
+            delivered_at:
+              type: string
+              format: date-time
+              nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Validation failed"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+paths:
+  /create-order:
+    post:
+      operationId: createOrder
+      summary: Create a delivery order
+      description: Submit a new delivery order from your restaurant system.
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid or missing API key
+        '429':
+          description: Rate limit exceeded (max 60 requests/minute)
+
+  /order-status:
+    post:
+      operationId: getOrderStatus
+      summary: Get order delivery status
+      description: Query the current status of a delivery order.
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderStatusRequest'
+      responses:
+        '200':
+          description: Order status returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderStatusResponse'
+        '404':
+          description: Order not found
+
+  /cancel-order:
+    post:
+      operationId: cancelOrder
+      summary: Cancel a delivery order
+      description: Cancel an order that hasn't been picked up yet.
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_id]
+              properties:
+                order_id:
+                  type: string
+                  format: uuid
+                reason:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Order cancelled
+        '400':
+          description: Order cannot be cancelled (already picked up or delivered)
+        '404':
+          description: Order not found

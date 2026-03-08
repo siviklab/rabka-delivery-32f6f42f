@@ -1,0 +1,14 @@
+{
+  "event": "order.status_changed",
+  "timestamp": "2026-03-08T14:45:00Z",
+  "data": {
+    "order_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "external_order_id": "REST-2026-00142",
+    "previous_status": "accepted",
+    "new_status": "picked_up",
+    "driver_name": "Piotr Nowak",
+    "driver_phone": "+48 987 654 321",
+    "picked_up_at": "2026-03-08T14:45:00Z",
+    "delivered_at": null
+  }
+}

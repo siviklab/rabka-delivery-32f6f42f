@@ -1,0 +1,23 @@
+{
+  "external_order_id": "REST-2026-00142",
+  "customer_name": "Jan Kowalski",
+  "customer_phone": "+48 123 456 789",
+  "customer_address": "ul. Główna 15, 34-700 Rabka-Zdrój",
+  "customer_lat": 49.6092,
+  "customer_lng": 19.9567,
+  "order_details": "Ring doorbell twice. 2nd floor.",
+  "delivery_fee": 7.50,
+  "items": [
+    {
+      "item_name": "Margherita Pizza",
+      "quantity": 2,
+      "unit_price": 24.99,
+      "notes": "Extra cheese"
+    },
+    {
+      "item_name": "Cola 0.5L",
+      "quantity": 2,
+      "unit_price": 5.00
+    }
+  ]
+}
