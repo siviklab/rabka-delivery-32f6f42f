@@ -24,6 +24,52 @@ import {
   Shield, LogOut, Plus, RefreshCw, ChevronRight,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { Label } from '@/components/ui/label';
+
+const AdminLoginForm: React.FC = () => {
+  const { signIn } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    if (error) {
+      toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <Shield className="h-12 w-12 mx-auto text-primary mb-2" />
+          <CardTitle>Admin Panel Login</CardTitle>
+          <CardDescription>Sign in with your admin account.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="admin-email">Email</Label>
+              <Input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="admin@example.com" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="admin-password">Password</Label>
+              <Input id="admin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
+            </div>
+            <Button className="w-full" type="submit" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-warning/20 text-warning border-warning/30',
