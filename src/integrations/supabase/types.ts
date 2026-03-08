@@ -26,6 +26,7 @@ export type Database = {
           delivery_fee: number
           driver_id: string | null
           estimated_time_minutes: number | null
+          external_order_id: string | null
           id: string
           order_details: string | null
           picked_up_at: string | null
@@ -44,6 +45,7 @@ export type Database = {
           delivery_fee?: number
           driver_id?: string | null
           estimated_time_minutes?: number | null
+          external_order_id?: string | null
           id?: string
           order_details?: string | null
           picked_up_at?: string | null
@@ -62,6 +64,7 @@ export type Database = {
           delivery_fee?: number
           driver_id?: string | null
           estimated_time_minutes?: number | null
+          external_order_id?: string | null
           id?: string
           order_details?: string | null
           picked_up_at?: string | null
@@ -239,30 +242,39 @@ export type Database = {
       restaurants: {
         Row: {
           address: string
+          api_key: string | null
           created_at: string | null
           id: string
           lat: number
           lng: number
           name: string
           phone: string | null
+          webhook_secret: string | null
+          webhook_url: string | null
         }
         Insert: {
           address: string
+          api_key?: string | null
           created_at?: string | null
           id?: string
           lat: number
           lng: number
           name: string
           phone?: string | null
+          webhook_secret?: string | null
+          webhook_url?: string | null
         }
         Update: {
           address?: string
+          api_key?: string | null
           created_at?: string | null
           id?: string
           lat?: number
           lng?: number
           name?: string
           phone?: string | null
+          webhook_secret?: string | null
+          webhook_url?: string | null
         }
         Relationships: []
       }
