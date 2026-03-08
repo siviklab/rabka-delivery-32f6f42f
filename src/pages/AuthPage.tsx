@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Truck, Mail, Lock, User, Phone } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Truck, Mail, Lock, User, Phone, ArrowLeft } from 'lucide-react';
 
 const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
