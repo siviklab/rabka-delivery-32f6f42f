@@ -109,7 +109,7 @@ export const useRestaurantOrders = (restaurantId: string | undefined) => {
   const updateStatus = async (orderId: string, status: string) => {
     const { error } = await supabase
       .from('delivery_orders')
-      .update({ status })
+      .update({ status: status as any })
       .eq('id', orderId);
 
     if (error) {
