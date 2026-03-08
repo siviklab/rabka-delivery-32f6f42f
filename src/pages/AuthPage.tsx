@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Truck, Mail, Lock, User, Phone } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Truck, Mail, Lock, User, Phone, ArrowLeft } from 'lucide-react';
 
 const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,7 +15,29 @@ const AuthPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+
   const { signIn, signUp } = useAuth();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast({ title: 'Błąd', description: 'Podaj swój adres email', variant: 'destructive' });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: 'Błąd', description: error.message, variant: 'destructive' });
+    } else {
+      setResetEmailSent(true);
+      toast({ title: 'Sprawdź email', description: 'Link do resetowania hasła został wysłany.' });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,100 +100,93 @@ const AuthPage: React.FC = () => {
 
         {/* Form */}
         <div className="bg-card rounded-2xl shadow-card p-6 animate-slide-up">
-          <div className="flex gap-2 mb-6">
-            <Button
-              variant={isLogin ? 'default' : 'outline'}
-              className="flex-1"
-              onClick={() => setIsLogin(true)}
-            >
-              Logowanie
-            </Button>
-            <Button
-              variant={!isLogin ? 'default' : 'outline'}
-              className="flex-1"
-              onClick={() => setIsLogin(false)}
-            >
-              Rejestracja
-            </Button>
-          </div>
+          {forgotPassword ? (
+            <>
+              <button
+                type="button"
+                onClick={() => { setForgotPassword(false); setResetEmailSent(false); }}
+                className="flex items-center gap-1 text-sm text-muted-foreground mb-4 hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" /> Wróć do logowania
+              </button>
+              <h2 className="text-xl font-semibold text-foreground mb-2">Resetuj hasło</h2>
+              <p className="text-sm text-muted-foreground mb-4">Podaj swój email, a wyślemy Ci link do resetowania hasła.</p>
+              {resetEmailSent ? (
+                <div className="text-center py-4">
+                  <Mail className="w-12 h-12 text-primary mx-auto mb-3" />
+                  <p className="text-foreground font-medium">Sprawdź swoją skrzynkę email</p>
+                  <p className="text-sm text-muted-foreground mt-1">Link do resetowania hasła został wysłany na <strong>{email}</strong></p>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="resetEmail">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input id="resetEmail" type="email" placeholder="jan@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" required />
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full gradient-primary text-primary-foreground h-12 text-lg font-semibold" disabled={loading}>
+                    {loading ? 'Wysyłanie...' : 'Wyślij link'}
+                  </Button>
+                </form>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="flex gap-2 mb-6">
+                <Button variant={isLogin ? 'default' : 'outline'} className="flex-1" onClick={() => setIsLogin(true)}>Logowanie</Button>
+                <Button variant={!isLogin ? 'default' : 'outline'} className="flex-1" onClick={() => setIsLogin(false)}>Rejestracja</Button>
+              </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {!isLogin && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName">Imię i nazwisko</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input id="fullName" type="text" placeholder="Jan Kowalski" value={fullName} onChange={(e) => setFullName(e.target.value)} className="pl-10" required={!isLogin} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Numer telefonu</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input id="phone" type="tel" placeholder="+48 600 000 000" value={phone} onChange={(e) => setPhone(e.target.value)} className="pl-10" />
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Imię i nazwisko</Label>
+                  <Label htmlFor="email">Email</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="Jan Kowalski"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="pl-10"
-                      required={!isLogin}
-                    />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input id="email" type="email" placeholder="jan@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" required />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Numer telefonu</Label>
+                  <Label htmlFor="password">Hasło</Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+48 600 000 000"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10"
-                    />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10" required minLength={6} />
                   </div>
                 </div>
-              </>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="jan@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
+                {isLogin && (
+                  <button type="button" onClick={() => setForgotPassword(true)} className="text-sm text-primary hover:underline">
+                    Zapomniałeś hasła?
+                  </button>
+                )}
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Hasło</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full gradient-primary text-primary-foreground h-12 text-lg font-semibold"
-              disabled={loading}
-            >
-              {loading ? 'Ładowanie...' : isLogin ? 'Zaloguj się' : 'Zarejestruj się'}
-            </Button>
-          </form>
+                <Button type="submit" className="w-full gradient-primary text-primary-foreground h-12 text-lg font-semibold" disabled={loading}>
+                  {loading ? 'Ładowanie...' : isLogin ? 'Zaloguj się' : 'Zarejestruj się'}
+                </Button>
+              </form>
+            </>
+          )}
         </div>
 
         <p className="text-center text-muted-foreground text-sm mt-6">
