@@ -1,0 +1,1 @@
+UPDATE profiles SET current_lat = 49.6095, current_lng = 19.9568 WHERE user_id = '1e1cb5ab-d160-4c7b-ae7f-0aaf94e907fd';
