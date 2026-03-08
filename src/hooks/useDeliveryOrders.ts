@@ -147,7 +147,7 @@ export const useDeliveryOrders = () => {
     }
   }, [user]);
 
-  const pendingOrders = orders.filter((o) => o.status === 'pending');
+  const pendingOrders = orders.filter((o) => o.status === 'pending' || o.status === 'confirmed');
   const activeOrders = orders.filter(
     (o) => o.driver_id === user?.id && ['accepted', 'picked_up', 'in_transit'].includes(o.status)
   );
