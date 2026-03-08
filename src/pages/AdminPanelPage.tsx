@@ -60,22 +60,7 @@ const AdminPanelPage: React.FC = () => {
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <Shield className="h-12 w-12 mx-auto text-primary mb-2" />
-            <CardTitle>Admin Access Required</CardTitle>
-            <CardDescription>Please log in to access the admin panel.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full" onClick={() => window.location.href = '/'}>
-              Go to Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <AdminLoginForm />;
   }
 
   if (!isAdmin) {
