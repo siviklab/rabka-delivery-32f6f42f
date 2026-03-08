@@ -86,3 +86,35 @@ export const useAddRestaurant = () => {
     },
   });
 };
+
+export const useGenerateApiKey = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (restaurantId: string) => {
+      const { data, error } = await supabase.functions.invoke('generate-api-key', {
+        body: { restaurant_id: restaurantId },
+      });
+      if (error) throw error;
+      return data as { api_key: string; webhook_secret: string };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-restaurants'] });
+    },
+  });
+};
+
+export const useUpdateRestaurantWebhook = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, webhook_url }: { id: string; webhook_url: string }) => {
+      const { error } = await supabase
+        .from('restaurants')
+        .update({ webhook_url })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-restaurants'] });
+    },
+  });
+};

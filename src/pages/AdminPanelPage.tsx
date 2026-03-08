@@ -9,6 +9,7 @@ import {
   useToggleDriverAvailability,
   useAddRestaurant,
 } from '@/hooks/useAdminData';
+import RestaurantApiDialog from '@/components/admin/RestaurantApiDialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import {
   Truck, Users, Store, Package, MapPin, Phone, Clock,
-  Shield, LogOut, Plus, RefreshCw, ChevronRight,
+  Shield, LogOut, Plus, RefreshCw, ChevronRight, Key,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Label } from '@/components/ui/label';
@@ -96,6 +97,7 @@ const AdminPanelPage: React.FC = () => {
 
   const [newRestaurant, setNewRestaurant] = useState({ name: '', address: '', lat: '', lng: '', phone: '' });
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [apiDialogRestaurant, setApiDialogRestaurant] = useState<any>(null);
 
   if (authLoading || roleLoading) {
     return (
@@ -479,8 +481,9 @@ const AdminPanelPage: React.FC = () => {
                         <TableHead>Name</TableHead>
                         <TableHead>Address</TableHead>
                         <TableHead>Phone</TableHead>
+                        <TableHead>API Key</TableHead>
                         <TableHead>Staff</TableHead>
-                        <TableHead>Location</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -490,18 +493,27 @@ const AdminPanelPage: React.FC = () => {
                           <TableCell className="text-sm">{restaurant.address}</TableCell>
                           <TableCell className="text-sm">{restaurant.phone ?? '—'}</TableCell>
                           <TableCell>
+                            {restaurant.api_key ? (
+                              <Badge variant="default" className="text-xs">Active</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">None</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
                             <Badge variant="secondary">
                               {(restaurant as any).restaurant_users?.length ?? 0} users
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {restaurant.lat.toFixed(4)}, {restaurant.lng.toFixed(4)}
+                          <TableCell>
+                            <Button variant="outline" size="sm" onClick={() => setApiDialogRestaurant(restaurant)}>
+                              <Key className="h-3.5 w-3.5 mr-1" /> Manage API
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
-                      {(restaurants.data?.length ?? 0) === 0 && (
+                        {(restaurants.data?.length ?? 0) === 0 && (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                          <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                             No restaurants found.
                           </TableCell>
                         </TableRow>
@@ -513,6 +525,12 @@ const AdminPanelPage: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <RestaurantApiDialog
+          restaurant={apiDialogRestaurant}
+          open={!!apiDialogRestaurant}
+          onOpenChange={(open) => { if (!open) setApiDialogRestaurant(null); }}
+        />
       </main>
     </div>
   );
