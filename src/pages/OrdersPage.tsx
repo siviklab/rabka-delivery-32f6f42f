@@ -16,15 +16,16 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onBack, onSelectOrder }) => {
   };
 
   const getStatusBadge = (status: DeliveryOrder['status']) => {
-    const badges = {
+    const badges: Record<string, { label: string; className: string }> = {
       pending: { label: 'Oczekuje', className: 'bg-warning/10 text-warning' },
+      confirmed: { label: 'Potwierdzone', className: 'bg-accent text-accent-foreground' },
       accepted: { label: 'Przyjęte', className: 'bg-primary/10 text-primary' },
       picked_up: { label: 'Odebrane', className: 'bg-secondary/10 text-secondary' },
       in_transit: { label: 'W drodze', className: 'bg-primary/10 text-primary' },
       delivered: { label: 'Dostarczone', className: 'bg-success/10 text-success' },
       cancelled: { label: 'Anulowane', className: 'bg-destructive/10 text-destructive' },
     };
-    return badges[status];
+    return badges[status] || badges.pending;
   };
 
   const formatTime = (dateString: string) => {

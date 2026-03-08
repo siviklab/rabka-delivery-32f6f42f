@@ -3,6 +3,7 @@ import { DeliveryOrder, useDeliveryOrders } from '@/hooks/useDeliveryOrders';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import DeliveryMap from '@/components/DeliveryMap';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -10,7 +11,6 @@ import {
   Navigation, 
   Package, 
   CheckCircle,
-  Truck,
   Store
 } from 'lucide-react';
 
@@ -22,8 +22,9 @@ interface ActiveDeliveryPageProps {
 
 const ActiveDeliveryPage: React.FC<ActiveDeliveryPageProps> = ({ order, onBack, onComplete }) => {
   const { updateOrderStatus } = useDeliveryOrders();
-  const { updateProfile } = useAuth();
+  const { updateProfile, profile } = useAuth();
   const [updating, setUpdating] = useState(false);
+  const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
 
   // Update driver location periodically
   useEffect(() => {
@@ -42,8 +43,7 @@ const ActiveDeliveryPage: React.FC<ActiveDeliveryPageProps> = ({ order, onBack, 
     };
 
     updateLocation();
-    const interval = setInterval(updateLocation, 30000); // Update every 30 seconds
-
+    const interval = setInterval(updateLocation, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -53,7 +53,6 @@ const ActiveDeliveryPage: React.FC<ActiveDeliveryPageProps> = ({ order, onBack, 
     setUpdating(false);
 
     if (!error && newStatus === 'delivered') {
-      // Update driver earnings
       const { data: currentProfile } = await supabase
         .from('profiles')
         .select('total_earnings')
@@ -74,7 +73,6 @@ const ActiveDeliveryPage: React.FC<ActiveDeliveryPageProps> = ({ order, onBack, 
   };
 
   const openNavigation = (lat: number, lng: number) => {
-    // Open in Google Maps
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
   };
 
@@ -129,11 +127,29 @@ const ActiveDeliveryPage: React.FC<ActiveDeliveryPageProps> = ({ order, onBack, 
           </div>
           <div className="text-right">
             <p className="text-lg font-bold text-primary">{Number(order.delivery_fee).toFixed(2)} zł</p>
+            {routeInfo && (
+              <p className="text-xs text-muted-foreground">~{routeInfo.duration} min • {routeInfo.distance} km</p>
+            )}
           </div>
         </div>
       </div>
 
       <div className="p-4 space-y-6">
+        {/* Map */}
+        {order.restaurant && (
+          <DeliveryMap
+            restaurantLat={order.restaurant.lat}
+            restaurantLng={order.restaurant.lng}
+            restaurantName={order.restaurant.name}
+            customerLat={order.customer_lat}
+            customerLng={order.customer_lng}
+            customerName={order.customer_name}
+            driverLat={profile?.current_lat}
+            driverLng={profile?.current_lng}
+            onRouteInfo={setRouteInfo}
+          />
+        )}
+
         {/* Progress Steps */}
         <div className="bg-card rounded-xl p-4 shadow-card">
           <h2 className="font-semibold text-foreground mb-4">Status dostawy</h2>

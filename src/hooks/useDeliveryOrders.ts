@@ -13,7 +13,7 @@ export interface DeliveryOrder {
   customer_lat: number;
   customer_lng: number;
   order_details: string | null;
-  status: 'pending' | 'accepted' | 'picked_up' | 'in_transit' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'accepted' | 'picked_up' | 'in_transit' | 'delivered' | 'cancelled';
   delivery_fee: number;
   estimated_time_minutes: number | null;
   picked_up_at: string | null;
@@ -147,7 +147,7 @@ export const useDeliveryOrders = () => {
     }
   }, [user]);
 
-  const pendingOrders = orders.filter((o) => o.status === 'pending');
+  const pendingOrders = orders.filter((o) => o.status === 'pending' || o.status === 'confirmed');
   const activeOrders = orders.filter(
     (o) => o.driver_id === user?.id && ['accepted', 'picked_up', 'in_transit'].includes(o.status)
   );
