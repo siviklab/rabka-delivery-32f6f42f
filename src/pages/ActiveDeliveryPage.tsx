@@ -26,25 +26,31 @@ const ActiveDeliveryPage: React.FC<ActiveDeliveryPageProps> = ({ order, onBack, 
   const [updating, setUpdating] = useState(false);
   const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
 
-  // Update driver location periodically
+  // Update driver location periodically (only if geolocation is available and succeeds)
   useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+    let geoAvailable = false;
+
     const updateLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
+            geoAvailable = true;
             await updateProfile({
               current_lat: position.coords.latitude,
               current_lng: position.coords.longitude,
             });
           },
-          (error) => console.error('Location error:', error)
+          () => {
+            // Geolocation failed — use existing DB coordinates, don't overwrite
+          }
         );
       }
     };
 
     updateLocation();
-    const interval = setInterval(updateLocation, 30000);
-    return () => clearInterval(interval);
+    interval = setInterval(updateLocation, 30000);
+    return () => { if (interval) clearInterval(interval); };
   }, []);
 
   const handleStatusUpdate = async (newStatus: DeliveryOrder['status']) => {
