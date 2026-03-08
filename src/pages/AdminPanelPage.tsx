@@ -493,12 +493,21 @@ const AdminPanelPage: React.FC = () => {
                           <TableCell className="text-sm">{restaurant.address}</TableCell>
                           <TableCell className="text-sm">{restaurant.phone ?? '—'}</TableCell>
                           <TableCell>
+                            {restaurant.api_key ? (
+                              <Badge variant="default" className="text-xs">Active</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">None</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
                             <Badge variant="secondary">
                               {(restaurant as any).restaurant_users?.length ?? 0} users
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {restaurant.lat.toFixed(4)}, {restaurant.lng.toFixed(4)}
+                          <TableCell>
+                            <Button variant="outline" size="sm" onClick={() => setApiDialogRestaurant(restaurant)}>
+                              <Key className="h-3.5 w-3.5 mr-1" /> Manage API
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
