@@ -97,6 +97,7 @@ const AdminPanelPage: React.FC = () => {
 
   const [newRestaurant, setNewRestaurant] = useState({ name: '', address: '', lat: '', lng: '', phone: '' });
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [apiDialogRestaurant, setApiDialogRestaurant] = useState<any>(null);
 
   if (authLoading || roleLoading) {
     return (
