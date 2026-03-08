@@ -525,6 +525,12 @@ const AdminPanelPage: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <RestaurantApiDialog
+          restaurant={apiDialogRestaurant}
+          open={!!apiDialogRestaurant}
+          onOpenChange={(open) => { if (!open) setApiDialogRestaurant(null); }}
+        />
       </main>
     </div>
   );
