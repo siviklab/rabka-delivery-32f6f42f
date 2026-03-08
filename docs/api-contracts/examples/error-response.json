@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "error": "Validation failed",
+  "details": [
+    { "field": "customer_phone", "message": "Invalid phone number format. Use: +48 XXX XXX XXX" },
+    { "field": "items", "message": "At least one item is required" }
+  ]
+}
