@@ -481,8 +481,9 @@ const AdminPanelPage: React.FC = () => {
                         <TableHead>Name</TableHead>
                         <TableHead>Address</TableHead>
                         <TableHead>Phone</TableHead>
+                        <TableHead>API Key</TableHead>
                         <TableHead>Staff</TableHead>
-                        <TableHead>Location</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
