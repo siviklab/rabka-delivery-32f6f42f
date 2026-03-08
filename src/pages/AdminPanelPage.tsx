@@ -22,7 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import {
   Truck, Users, Store, Package, MapPin, Phone, Clock,
-  Shield, LogOut, Plus, RefreshCw, ChevronRight,
+  Shield, LogOut, Plus, RefreshCw, ChevronRight, Key,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Label } from '@/components/ui/label';
