@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import RestaurantPanelPage from "./pages/RestaurantPanelPage";
+import AdminPanelPage from "./pages/AdminPanelPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
