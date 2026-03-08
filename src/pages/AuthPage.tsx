@@ -14,7 +14,29 @@ const AuthPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+
   const { signIn, signUp } = useAuth();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast({ title: 'Błąd', description: 'Podaj swój adres email', variant: 'destructive' });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: 'Błąd', description: error.message, variant: 'destructive' });
+    } else {
+      setResetEmailSent(true);
+      toast({ title: 'Sprawdź email', description: 'Link do resetowania hasła został wysłany.' });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
